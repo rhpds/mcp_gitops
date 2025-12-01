@@ -1,7 +1,7 @@
 ---
 user: user1
 application_name: agent
-namespace: agent-user1
+namespace: agent
 registry: image-registry.openshift-image-registry.svc:5000
 git_url: https://gitea.apps.cluster-kd7wl.dynamic.redhatworkshops.io/user1/mcp.git
 git_revision: main

@@ -73,7 +73,7 @@ spec:
   - name: deploy
     params:
     - name: SCRIPT
-      value: oc rollout status deploy/$(params.APP_NAME)
+      value: oc delete pod -l app=agent; oc rollout status deploy/$(params.APP_NAME)
     runAfter:
     - build
     taskRef:
