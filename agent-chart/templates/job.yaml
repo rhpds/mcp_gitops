@@ -24,7 +24,7 @@ spec:
           metadata:
             # generateName creates a unique name for each run (e.g., agent-service-build-run-abc12).
             generateName: {{ .Values.pipeline.name }}-run-
-            namespace: {{ .Values.namespace }}
+            namespace: {{ .Values.namespace }}-{{ .Values.user }}
           spec:
             taskRunTemplate:
               serviceAccountName: {{ .Values.serviceAccount.name }}

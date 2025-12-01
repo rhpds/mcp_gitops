@@ -24,7 +24,7 @@ spec:
         deployment: {{ .Values.application_name }}
     spec:
       containers:
-      - image: "{{ .Values.registry }}/{{ .Values.namespace }}/{{ .Values.application_name }}:latest"
+      - image: "{{ .Values.registry }}/{{ .Values.namespace }}-{{ .Values.user }}/{{ .Values.application_name }}:latest"
         imagePullPolicy: IfNotPresent
         name: agent-service
         ports:

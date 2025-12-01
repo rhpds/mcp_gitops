@@ -100,7 +100,7 @@ spec:
           if [ "$(params.aggregateTaskStatus)" == "Failed" ]
           then
             set -Bx
-            echo "Looks like your pipeline failed dumbass, let's find where you messed up"
+            echo "Looks like your pipeline failed, let's find where you messed up"
             failed_pod=$(oc get pods --field-selector="status.phase=Failed" --sort-by="status.startTime" | grep -v "trigger-agent" | grep "agent-service-build" | tail -n 1 | awk '{print $1}')
             curl -i -H "Content-Type: application/json" -X POST -d "{\"namespace\":\"{{ .Values.namespace }}-{{ .Values.user }}\",\"pod_name\":\"${failed_pod}\",\"container_name\":\"step-buildah\"}" {{ .Values.agent_endpoint }}
           fi
