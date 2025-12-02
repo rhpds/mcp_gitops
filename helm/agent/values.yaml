@@ -2,17 +2,18 @@
 user: user1
 application_name: agent
 namespace: agent-user1
-registry: image-registry.openshift-image-registry.svc:5000
+
 git_url: https://gitea.apps.cluster-kd7wl.dynamic.redhatworkshops.io/user1/mcp.git
 git_revision: main
 git_subdirectory: agent
+registry: image-registry.openshift-image-registry.svc:5000
 agent_endpoint: http://agent.agent-user1.svc:8000/report-failure
 
 # Agent Configuration
 agentConfig:
-  litellm_url: https://litellm-litemaas.apps.prod.rhoai.rh-aiservices-bu.com/v1
-  litellm_api_key: sk-Z9kMTaKyZOE5NPShqPhzOg
-  litellm_model: openai/Llama-4-Scout-17B-16E-W4A16
+  litellm_url: "FROM SECRETS"
+  litellm_api_key: "FROM SECRETS"
+  litellm_model: "FROM Secrets"
   mcp_openshift_url: https://mcp-openshift-mcp-user1.apps.cluster-kd7wl.dynamic.redhatworkshops.io/sse#openshift
   mcp_openshift_transport: sse
   mcp_gitea_url: https://mcp-gitea-mcp-user1.apps.cluster-kd7wl.dynamic.redhatworkshops.io/mcp
