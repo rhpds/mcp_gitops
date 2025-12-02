@@ -13,10 +13,10 @@ agent_endpoint: http://agent.agent-user1.svc:8000/report-failure
 agentConfig:
   litellm_url: "FROM SECRETS"
   litellm_api_key: "FROM SECRETS"
-  litellm_model: "FROM Secrets"
-  mcp_openshift_url: https://mcp-openshift-mcp-user1.apps.cluster-kd7wl.dynamic.redhatworkshops.io/sse#openshift
+  litellm_model: "FROM SECRETS"
+  mcp_openshift_url: https://mcp-openshift-mcp-user1.svc.cluster.local:8080/sse#openshift
   mcp_openshift_transport: sse
-  mcp_gitea_url: https://mcp-gitea-mcp-user1.apps.cluster-kd7wl.dynamic.redhatworkshops.io/mcp
+  mcp_gitea_url: https://mcp-gitea-mcp-user1.svc.cluster.local:8080/mcp
   mcp_gitea_transport: streamable-http
   port: 8000
 
