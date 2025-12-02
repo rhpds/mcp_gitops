@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-config
+  namespace: {{ .Values.namespace }}
+data:
+  LITELLM_URL: {{ .Values.agentConfig.litellm_url }}
+  LITELLM_API_KEY: {{ .Values.agentConfig.litellm_api_key }}
+  LITELLM_MODEL: {{ .Values.agentConfig.litellm_model }}
+  MCP_OPENSHIFT_URL: {{ .Values.agentConfig.mcp_openshift_url }}
+  MCP_OPENSHIFT_TRANSPORT: {{ .Values.agentConfig.mcp_openshift_transport }}
+  MCP_GITEA_URL: {{ .Values.agentConfig.mcp_gitea_url }}
+  MCP_GITEA_TRANSPORT: {{ .Values.agentConfig.mcp_gitea_transport }}
+  PORT: {{ .Values.agentConfig.port }}

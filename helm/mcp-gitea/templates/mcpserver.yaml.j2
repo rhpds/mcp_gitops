@@ -1,0 +1,29 @@
+---
+apiVersion: toolhive.stacklok.dev/v1alpha1
+kind: MCPServer
+metadata:
+  name: gitea
+  namespace: {{ .Values.namespace }}
+spec:
+  image: {{ .Values.image }}
+  transport: streamable-http
+  mcpPort: 8000
+  proxyPort: 8080
+  secrets:
+  - name: gitea-creds
+    key: url
+    targetEnvName: GITEA_HOST
+  - name: gitea-creds
+    key: token
+    targetEnvName: GITEA_ACCESS_TOKEN
+  podTemplateSpec:
+    spec:
+      containers:
+      - name: mcp
+        args:
+        - /app/gitea-mcp
+        - -d
+        - -port
+        - "8000"
+        - -transport
+        - http

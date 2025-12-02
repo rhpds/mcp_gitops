@@ -1,0 +1,10 @@
+---
+user: user1
+application_name: mcp-gitea
+namespace: mcp-user1
+
+image: docker.gitea.com/gitea-mcp-server:latest
+
+giteaConfig:
+  url: http://gitea.gitea.svc:3000
+  token: "Set from Secrets"

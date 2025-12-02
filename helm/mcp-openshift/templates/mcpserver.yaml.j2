@@ -1,0 +1,23 @@
+---
+apiVersion: toolhive.stacklok.dev/v1alpha1
+kind: MCPServer
+metadata:
+  name: openshift
+  namespace: {{ .Values.namespace }}
+spec:
+  image: {{ .Values.image }}
+  transport: sse
+  mcpPort: 8000
+  proxyPort: 8080
+  podTemplateSpec:
+    spec:
+      containers:
+      - args:
+        - --port
+        - "8000"
+        command:
+        - ./kubernetes-mcp-server
+        name: mcp
+  resources:
+    limits: {}
+    requests: {}

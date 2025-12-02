@@ -1,0 +1,28 @@
+---
+user: user1
+application_name: librechat
+namespace: librechat-user1
+
+secrets:
+  # Required: LibreChat internal encryption and JWT secrets
+  # Generate random secrets using: openssl rand -hex 32
+  # Or use: https://www.librechat.ai/toolkit/creds_generator
+  creds_key: "FROM SECRETS"
+  jwt_secret: "FROM SECRETS"
+  jwt_refresh_secret: "FROM SECRETS"
+
+  # Required: Meilisearch master key
+  # Generate using: openssl rand -hex 16
+  meili_master_key: "FROM SECRETS"
+
+  # Custom Model Endpoint
+  custom_model_url: tbd
+  # Key for the MaaS
+  custom_model_key: "FROM SECRETS"
+
+# Default user credentials (used by user-init-job.yaml
+default_user:
+  setup: true
+  name: user1
+  email: user1@example.com
+  password: "FROM SECRETS"

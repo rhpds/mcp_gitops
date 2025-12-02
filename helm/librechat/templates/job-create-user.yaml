@@ -1,0 +1,82 @@
+{{- if .Values.default_user.setup -}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: librechat-create-user
+  namespace: {{ .Values.namespace }}
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      name: librechat-create-user
+    spec:
+      restartPolicy: Never
+      securityContext: {}
+      containers:
+      - name: create-user
+        image: registry.access.redhat.com/ubi10/httpd-24:latest
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            echo "Waiting for LibreChat API to be ready..."
+            RETRIES=0
+            MAX_RETRIES=30
+            until curl -s http://librechat:3080/ > /dev/null 2>&1; do
+              echo "Waiting for API... (attempt $((RETRIES+1))/$MAX_RETRIES)"
+              RETRIES=$((RETRIES+1))
+              if [ $RETRIES -ge $MAX_RETRIES ]; then
+                echo "API did not become ready in time"
+                exit 1
+              fi
+              sleep 10
+            done
+            sleep 5  # Extra wait for API to fully initialize
+
+            echo "API is ready. Checking if user exists..."
+
+            # Check if user already exists by attempting login
+            LOGIN_RESPONSE=$(curl -s -X POST http://librechat:3080/api/auth/login \
+              -H "Content-Type: application/json" \
+              -d "{\"email\":\"${DEFAULT_USER_EMAIL}\",\"password\":\"${DEFAULT_USER_PASSWORD}\"}")
+
+            if echo "$LOGIN_RESPONSE" | grep -q "token"; then
+              echo "User ${DEFAULT_USER_EMAIL} already exists. Skipping creation."
+              exit 0
+            fi
+
+            echo "Creating user ${DEFAULT_USER_EMAIL}..."
+
+            # Register the user
+            REGISTER_RESPONSE=$(curl -s -X POST http://librechat:3080/api/auth/register \
+              -H "Content-Type: application/json" \
+              -d "{\"name\":\"${DEFAULT_USER_NAME}\",\"email\":\"${DEFAULT_USER_EMAIL}\",\"password\":\"${DEFAULT_USER_PASSWORD}\",\"confirm_password\":\"${DEFAULT_USER_PASSWORD}\"}")
+
+            if echo "$REGISTER_RESPONSE" | grep -q -E "user|success|token|Please check your email to verify your email address"; then
+              echo "User ${DEFAULT_USER_EMAIL} created successfully!"
+              exit 0
+            else
+              echo "Failed to create user. Response: $REGISTER_RESPONSE"
+              exit 1
+            fi
+        env:
+        - name: DEFAULT_USER_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: librechat-credentials-env
+              key: DEFAULT_USER_EMAIL
+        - name: DEFAULT_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: librechat-credentials-env
+              key: DEFAULT_USER_PASSWORD
+        - name: DEFAULT_USER_NAME
+          valueFrom:
+            secretKeyRef:
+              name: librechat-credentials-env
+              key: DEFAULT_USER_NAME
+              optional: true
+        securityContext:
+          runAsNonRoot: false
+{{- end }}

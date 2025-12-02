@@ -10,13 +10,14 @@ agent_endpoint: http://agent.agent-user1.svc:8000/report-failure
 
 # Agent Configuration
 agentConfig:
-  clientTimeout: "600.0"
-  llamaStackUrl: "http://llamastack-with-config-service.llama-stack.svc.cluster.local:8321"
-  # llamaStackUrl: "http://llamastack-with-config-service.default.svc.cluster.local:8321"
-  maxInferIterations: "50"
-  maxTokens: "5000"
-  modelId: "llama-4-scout-17b-16e-w4a16"
-  temperature: "0.0"
+  litellm_url: https://litellm-litemaas.apps.prod.rhoai.rh-aiservices-bu.com/v1
+  litellm_api_key: sk-Z9kMTaKyZOE5NPShqPhzOg
+  litellm_model: openai/Llama-4-Scout-17B-16E-W4A16
+  mcp_openshift_url: https://mcp-openshift-mcp-user1.apps.cluster-kd7wl.dynamic.redhatworkshops.io/sse#openshift
+  mcp_openshift_transport: sse
+  mcp_gitea_url: https://mcp-gitea-mcp-user1.apps.cluster-kd7wl.dynamic.redhatworkshops.io/mcp
+  mcp_gitea_transport: streamable-http
+  port: 8000
 
 # Service Account configuration
 serviceAccount:

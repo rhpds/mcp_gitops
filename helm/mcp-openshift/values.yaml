@@ -1,0 +1,14 @@
+---
+user: user1
+application_name: mcp-openshift
+namespace: mcp-user1
+serviceAccount: openshift-sa
+
+image: quay.io/containers/kubernetes_mcp_server:latest
+
+# Role bindings for the service account
+# Adjust for the agent to have the correct permissions
+roleBindings:
+- name: openshift-pipelines-edit
+  namespace: mcp-user1
+  clusterRole: edit

@@ -12,7 +12,7 @@ export PORT="${PORT:-8000}"
 
 # Test payload
 TEST_NAMESPACE="${TEST_NAMESPACE:-agent-user1}"
-TEST_POD_NAME="${TEST_POD_NAME:-agent-c4b5477-mfkb7}"
+TEST_POD_NAME="${TEST_POD_NAME:-agent-c4b5477-7x8b7}"
 TEST_CONTAINER_NAME="${TEST_CONTAINER_NAME:-}"
 
 # =============================================================================
