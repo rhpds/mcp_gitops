@@ -1,5 +1,0 @@
----
-apiVersion: v2
-description: A Helm chart for deploying a (broken) Tekton Pipeline 🐈
-name: demo-pipeline
-version: 0.0.1

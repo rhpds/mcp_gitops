@@ -1,5 +1,0 @@
-fastapi[standard]==0.116.1
-llama_stack==0.2.6
-llama_stack_client==0.2.7
-rich==14.0.0
-termcolor==3.1.0

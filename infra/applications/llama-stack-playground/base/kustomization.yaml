@@ -1,9 +1,0 @@
----
-helmGlobals:
-  chartHome: ../chart/
-
-helmCharts:
-  - name: llama-stack-playground
-    includeCRDs: true
-    releaseName: llama-stack-playground
-    valuesFile: values.yaml

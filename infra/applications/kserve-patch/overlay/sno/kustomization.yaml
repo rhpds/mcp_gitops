@@ -1,7 +1,0 @@
----
-resources:
-  - ../../base
-
-patches:
-  - path: service-mesh-member-roll.yaml
-  - path: agent-service.yaml

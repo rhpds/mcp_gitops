@@ -1,8 +1,0 @@
----
-apiVersion: serving.knative.dev/v1
-kind: Service
-metadata:
-  annotations:
-    serving.knative.openshift.io/enablePassthrough: 'true'
-  name: agent-service-test
-  namespace: agent-demo

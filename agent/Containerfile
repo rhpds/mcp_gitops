@@ -1,17 +1,13 @@
-FROM registry.access.redhat.com/ubi9/python-311
+FROM registry.access.redhat.com/ubi9/python-311:latest
 
-USER root
+WORKDIR /app
 
-RUN dnf -y update \
- && dnf -y install python3-pip \
- && dnf -y clean all \
- && rm -rf /var/cache/dnf \
- && pip install pip==24.2 setuptools==80.8.0
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-USER 1001
+COPY main.py .
+COPY mcp_client.py .
 
-COPY requirements.txt ./
-RUN pip3 install --no-cache-dir -r requirements.txt
-COPY *.py ./
+EXPOSE 8000
 
-CMD fastapi run main.py
+CMD ["python", "main.py"]

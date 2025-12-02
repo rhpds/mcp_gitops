@@ -1,5 +1,0 @@
-resources:
-  - ../../base-standalone
-  - namespace.yaml
-
-namespace: milvus

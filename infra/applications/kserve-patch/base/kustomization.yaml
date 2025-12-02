@@ -1,4 +1,0 @@
----
-resources:
-  - service-mesh-member-roll.yaml
-  - agent-service.yaml
