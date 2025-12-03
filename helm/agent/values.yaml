@@ -26,17 +26,17 @@ serviceAccount:
 
 # Role Binding configuration
 roleBinding:
-  name: agent-edit
+  name: edit-agent
   clusterRole: edit
 
 # Job configuration
 job:
-  name: trigger-agent-service-build
+  name: trigger-agent-image-build
   enabled: true
 
 # Pipeline configuration
 pipeline:
-  name: agent-service-build
+  name: build-agent
   timeout: 1h0m0s
 
 # Workspace configuration
@@ -46,4 +46,4 @@ workspace:
 
 # Container images
 images:
-  cliTool: registry.redhat.io/openshift4/ose-cli:latest
+  cliTool: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest

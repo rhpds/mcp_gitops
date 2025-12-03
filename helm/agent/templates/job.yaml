@@ -52,7 +52,7 @@ spec:
                   - ReadWriteOnce
                   resources:
                     requests:
-                      storage: {{ .Values.workspace.storage }}
+                      storageSize: {{ .Values.workspace.storageSize }}
           EOF
       restartPolicy: OnFailure
 {{- end }}
