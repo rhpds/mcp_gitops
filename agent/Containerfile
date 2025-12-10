@@ -2,11 +2,16 @@ FROM registry.access.redhat.com/ubi9/python-311:latest
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY --chown=1001:0 requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main.py .
-COPY mcp_client.py .
+COPY --chown=1001:0 main.py .
+COPY --chown=1001:0 mcp_client.py .
+COPY --chown=1001:0 pytest.ini .
+COPY --chown=1001:0 tests/ tests/
+
+# Run tests during build to verify application works
+RUN pytest tests/ -v --tb=short
 
 EXPOSE 8000
 
