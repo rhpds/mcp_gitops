@@ -1,0 +1,312 @@
+= MCP GitOps Pipeline Failure Agent
+:toc: macro
+:toclevels: 3
+:icons: font
+
+An AI-powered pipeline failure analysis agent that automatically detects, analyzes, and creates issues for failed Kubernetes/OpenShift pods using LLM tool calling via MCP (Model Context Protocol) servers.
+
+toc::[]
+
+== Overview
+
+The MCP GitOps project provides an intelligent agent that integrates with Tekton pipelines to automatically:
+
+1. Receive webhook notifications when pipelines fail
+2. Retrieve pod logs from OpenShift/Kubernetes
+3. Analyze failures using an LLM (via LiteLLM)
+4. Create detailed issues in Gitea with error summaries and potential solutions
+
+The agent uses the Model Context Protocol (MCP) to communicate with external tool servers, enabling dynamic tool discovery and execution.
+
+== Architecture
+
+[source]
+----
+┌─────────────────┐     POST /report-failure     ┌─────────────────┐
+│  Tekton         │ ────────────────────────────▶│  Pipeline       │
+│  Pipeline       │                              │  Failure Agent  │
+└─────────────────┘                              └────────┬────────┘
+                                                          │
+                                     ┌────────────────────┼────────────────────┐
+                                     │                    │                    │
+                                     ▼                    ▼                    ▼
+                            ┌────────────────┐   ┌────────────────┐   ┌────────────────┐
+                            │  LiteLLM       │   │  MCP OpenShift │   │  MCP Gitea     │
+                            │  (LLM API)     │   │  Server        │   │  Server        │
+                            └────────────────┘   └────────────────┘   └────────────────┘
+                                                          │                    │
+                                                          ▼                    ▼
+                                                   Pod Logs            Issue Creation
+----
+
+=== Components
+
+* **HTTP Server** (`main.py`) - FastAPI server with `/report-failure` endpoint accepting POST requests
+* **MCP Client** (`mcp_client.py`) - Connects to external MCP servers to discover and call tools
+** Supports SSE transport (for OpenShift MCP server)
+** Supports streamable-http transport (for Gitea MCP server)
+* **Agent Loop** - Iterative LiteLLM completion loop that:
+** Gets available tools from MCP servers at startup
+** Forwards tool calls from the model to the appropriate MCP server
+** Returns results back to the model until completion
+
+== Project Structure
+
+[source]
+----
+mcp-gitops/
+├── agent/                      # Main Python agent application
+│   ├── main.py                 # FastAPI server and core agent logic
+│   ├── mcp_client.py           # MCP server client implementation
+│   ├── requirements.txt        # Python dependencies
+│   ├── Containerfile           # Container build definition
+│   ├── pytest.ini              # Pytest configuration
+│   └── tests/                  # Test suite
+│       ├── conftest.py
+│       ├── test_api.py
+│       ├── test_main.py
+│       └── test_mcp_client.py
+│
+└── helm/                       # Helm charts for Kubernetes deployment
+    ├── agent/                  # AI agent Helm chart
+    ├── librechat/              # LibreChat Helm chart
+    ├── mcp-gitea/              # Gitea MCP server Helm chart
+    └── mcp-openshift/          # OpenShift MCP server Helm chart
+----
+
+== Prerequisites
+
+* Python 3.11+
+* OpenShift/Kubernetes cluster with Tekton pipelines
+* Gitea instance for issue tracking
+* LiteLLM-compatible AI model endpoint
+* MCP servers for OpenShift and Gitea
+
+== Installation
+
+=== Local Development
+
+[source,bash]
+----
+# Navigate to the agent directory
+cd agent
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Set required environment variables (see Configuration section)
+export LITELLM_URL="http://your-litellm-endpoint"
+export LITELLM_API_KEY="your-api-key"
+export MCP_OPENSHIFT_URL="http://mcp-openshift-server/sse"
+export MCP_GITEA_URL="http://mcp-gitea-server/mcp"
+export GITEA_OWNER="your-org"
+export GITEA_REPO="your-repo"
+
+# Run the server
+python main.py
+----
+
+=== Container Build
+
+[source,bash]
+----
+cd agent
+
+# Build with Podman
+podman build -t pipeline-agent -f Containerfile .
+
+# Or with Docker
+docker build -t pipeline-agent -f Containerfile .
+
+# Run the container
+podman run -p 8000:8000 \
+  -e LITELLM_URL="http://your-litellm-endpoint" \
+  -e LITELLM_API_KEY="your-api-key" \
+  -e MCP_OPENSHIFT_URL="http://mcp-openshift-server/sse" \
+  -e MCP_GITEA_URL="http://mcp-gitea-server/mcp" \
+  -e GITEA_OWNER="your-org" \
+  -e GITEA_REPO="your-repo" \
+  pipeline-agent
+----
+
+=== Kubernetes/OpenShift Deployment
+
+Use the provided Helm charts for production deployment:
+
+[source,bash]
+----
+# Deploy the AI agent
+helm install agent helm/agent -n your-namespace
+
+# Deploy MCP servers
+helm install mcp-openshift helm/mcp-openshift -n your-namespace
+helm install mcp-gitea helm/mcp-gitea -n your-namespace
+----
+
+== Configuration
+
+=== Environment Variables
+
+[cols="2,3,1"]
+|===
+|Variable |Description |Default
+
+|`LITELLM_URL`
+|Base URL for the LiteLLM API endpoint
+|_(required)_
+
+|`LITELLM_API_KEY`
+|API key for LiteLLM authentication
+|_(required)_
+
+|`LITELLM_MODEL`
+|Model identifier to use for analysis
+|`openai/Llama-4-Scout-17B-16E-W4A16`
+
+|`MCP_OPENSHIFT_URL`
+|URL for the OpenShift MCP server
+|_(required)_
+
+|`MCP_OPENSHIFT_TRANSPORT`
+|Transport type for OpenShift MCP server
+|`sse`
+
+|`MCP_GITEA_URL`
+|URL for the Gitea MCP server
+|_(required)_
+
+|`MCP_GITEA_TRANSPORT`
+|Transport type for Gitea MCP server
+|`streamable-http`
+
+|`GITEA_OWNER`
+|Gitea repository owner for issue creation
+|`user1`
+
+|`GITEA_REPO`
+|Gitea repository name for issue creation
+|`mcp`
+
+|`PORT`
+|Server listening port
+|`8000`
+|===
+
+== API Endpoints
+
+=== POST /report-failure
+
+Trigger the agent to analyze a failed pod and create an issue.
+
+**Request Body:**
+[source,json]
+----
+{
+  "namespace": "pipelines",
+  "pod_name": "build-xyz-abc123",
+  "container_name": "step-buildah"  // optional
+}
+----
+
+**Response:**
+[source,json]
+----
+{
+  "status": "success",
+  "result": "Issue created: https://gitea.example.com/org/repo/issues/42"
+}
+----
+
+=== GET /health
+
+Health check endpoint for Kubernetes probes.
+
+**Response:**
+[source,json]
+----
+{
+  "status": "healthy"
+}
+----
+
+== Tekton Integration
+
+Configure your Tekton pipeline to call the agent on failure:
+
+[source,yaml]
+----
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+spec:
+  finally:
+    - name: report-failure
+      when:
+        - input: $(tasks.status)
+          operator: in
+          values: ["Failed"]
+      taskRef:
+        name: report-failure-task
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: report-failure-task
+spec:
+  steps:
+    - name: report
+      image: curlimages/curl
+      script: |
+        failed_pod=$(oc get pods --field-selector="status.phase=Failed" \
+          --sort-by="status.startTime" | tail -n 1 | awk '{print $1}')
+
+        curl -X POST http://agent.agent-namespace.svc:8000/report-failure \
+          -H "Content-Type: application/json" \
+          -d "{\"namespace\":\"$(context.pipelineRun.namespace)\",\"pod_name\":\"${failed_pod}\"}"
+----
+
+== MCP Tool Flow
+
+The agent operates in an iterative loop:
+
+1. **Receive Failure Report** - Pipeline sends pod details to `/report-failure`
+2. **Build Prompt** - Agent creates a prompt with pod context and examples
+3. **LLM Analysis** - Model analyzes the situation and requests tools
+4. **Tool Execution** - Agent executes requested tools via MCP servers:
+** `pods_log` - Retrieve pod logs from OpenShift
+** `create_issue` - Create issue in Gitea
+5. **Iterate** - Process continues until the model completes or max iterations reached
+6. **Return Result** - Agent returns the final result (usually issue URL)
+
+== Testing
+
+Run the test suite:
+
+[source,bash]
+----
+cd agent
+
+# Install test dependencies
+pip install -r requirements.txt
+
+# Run tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ -v --cov=. --cov-report=term-missing
+----
+
+Tests are also run during the container build process.
+
+== Dependencies
+
+* `fastapi>=0.104.0` - Web framework
+* `uvicorn>=0.24.0` - ASGI server
+* `litellm>=1.0.0` - LLM integration
+* `httpx>=0.25.0` - Async HTTP client
+* `pydantic>=2.0.0` - Data validation
+* `pytest>=7.4.0` - Testing framework
+* `pytest-asyncio>=0.21.0` - Async test support
+
+== License
+
+See LICENSE file for details.
